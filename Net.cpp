@@ -1,9 +1,10 @@
 #include "Net.h"
 #include "fstream"
 #include "iostream"
+#include <string>
 #include <Windows.h>
 
-//Определение методов класса Net
+// Methods for fully-connected layers
 
 using namespace concurrency;
 
@@ -19,18 +20,6 @@ Net::Net(std::string network_path, std::string optimisator, double input_speed, 
 	}
 
 
-}
-
-Net::Net(std::string network_path, std::string optimisator, double input_speed, size_t filter_size, double special_parameters) {
-	setParamsFromFile(network_path);
-	speed = input_speed;
-	specialParams = special_parameters;
-	if (optimisator == "sgd") {
-		optimisatorFunc = 0;
-	}
-	if (optimisator == "momentum") {
-		optimisatorFunc = 1;
-	}
 }
 
 std::vector<double> Net::predict(double data[]) {
@@ -74,10 +63,6 @@ void Net::setParamsFromFile(std::string network_path) {
 	}
 	
 	file.close();
-}
-
-void Net::setFromFileConv(std::string network_path) {
-
 }
 
 void Net::train(std::string trainData, double critError, std::string network_save_path) {
@@ -129,12 +114,6 @@ std::vector<double> Net::returnFinals() {
 	return layers[quantityOfLayers - 1].returnValues();
 }
 
-void Net::say() {
-	std::cout << '\n' << quantityOfLayers << '\n';
-	for (int c = 0; c < quantityOfLayers; c++) {
-		layers[c].say();
-	}
-}
 
 void Net::inputDataset(std::string data) {
 	std::fstream file(data);
@@ -247,11 +226,88 @@ void Net::saveData(std::string save_path) {
 	file.close();
 }
 
-Net::~Net() {
-	delete[] layers;
-	for (int c = 0; c < trainDataNumber; c++) {
-		delete[] dataSet[c];
+
+// Methods for convertive layers
+
+Net::Net(std::string network_path, std::string convPath, std::string optimisator, double input_speed, size_t filter_size, double special_parameters) {
+	setParamsFromFile(network_path);
+	setConvLayersFromFile(convPath);
+	speed = input_speed;
+	specialParams = special_parameters;
+	if (optimisator == "sgd") {
+		optimisatorFunc = 0;
 	}
-	delete[] dataSet;
+	if (optimisator == "momentum") {
+		optimisatorFunc = 1;
+	}
+	nameTraenData.push_back("airplane");
+	nameTraenData.push_back("automobile");
+	nameTraenData.push_back("bird");
+	nameTraenData.push_back("cat");
+	nameTraenData.push_back("deer");
+	nameTraenData.push_back("dog");
+	nameTraenData.push_back("frog");
+	nameTraenData.push_back("horse");
+	nameTraenData.push_back("ship");
+	nameTraenData.push_back("truck");
+
+}
+
+void Net::convRandWeights() {
+	for (int c = 0; c < convQuantityOfLayers; c++) {
+		convLayers[c].randMatrix(matrixSize);
+	}
+}
+
+void Net::setConvLayersFromFile(std::string network_path) {
+	std::fstream file(network_path);
+	std::string state;
+	file >> state;
+	file >> convQuantityOfLayers >> matrixSize;
+	convLayers = new ConvLayer[convQuantityOfLayers];
+	int x;
+	for (int i = 0; i < convQuantityOfLayers / 2; i++) {
+		file >> x;
+		convLayers[i].setQuantityOfNeurons(x);
+	}
+
+	if (state == "untrained") {
+		convRandWeights();
+		createConnectionsToPrevLayers(false);
+	}
+	else {
+		readWeights(file);
+		createConnectionsToNextLayers();
+	}
+
+	file.close();
+}
+
+std::string Net::randData() {
+	std::string way = "D:\\Tvorch_proect\\cifar10\\train\\";
+	int x = rand() % 10;
+	int y = rand() % 5000 + 1;
+	way += nameTraenData[x] + "\\";
+	std::string s = "0000", name = std::to_string(y);
+	for (int c = name.size() - 1; c >= 0; c--)
+		s[c] = name[c];
+	way += s + ".png";
+	return way;
+}
+
+void Net::say() {
+	std::cout << '\n' << convQuantityOfLayers << '\n';
+	for (int c = 0; c < convQuantityOfLayers / 2; c++) {
+		convLayers[c].say();
+	}
+}
+
+// Destructor
+Net::~Net() {
+	//delete[] layers;
+	//for (int c = 0; c < trainDataNumber; c++) {
+	//	delete[] dataSet[c];
+	//}
+	//delete[] dataSet;
 	//std::cout << "НА НЕТЕ\n";
 }

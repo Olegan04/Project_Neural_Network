@@ -182,6 +182,6 @@ void Layer::say() {
 }
 
 Layer::~Layer() {
-	delete[] layer;
+	//delete[] layer;
 	/*std::cout << "мю кеепе\n";*/
 }

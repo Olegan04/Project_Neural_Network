@@ -44,7 +44,7 @@ Neuron::~Neuron() {
 	/*int a;
 	std::cin >> a;
 	std::cout << connections[0];*/
-	delete[] connections;
+	//delete[] connections;
 	/*delete[] connectionsToNextLayer;
 	delete[] oldDW;*/
 	/*std::cout << "ÍÀ ÍÅÉĞÎÍÅ\n";*/

@@ -32,7 +32,7 @@ public:
 	void say();
 
 
-	~ConvLayer();
+	//~ConvLayer();
 private:
 	ConvNeuron* layer;
 	int quantityOfNeuorns;

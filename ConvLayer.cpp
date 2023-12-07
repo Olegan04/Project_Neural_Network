@@ -27,10 +27,8 @@ void ConvLayer::randMatrix(int size) {
 				layer[k].RoldDW[i][j] = 0;
 				layer[k].GoldDW[i][j] = 0;
 				layer[k].BoldDW[i][j] = 0;
-				//std::cout << layer[k].connectionsToNextLayer[c] << ' ';
 			}
 		}
-		//std::cout << '\n';
 		layer[k].bias = (rand() % 200 - 100) / 100.0;
 	}
 }
@@ -70,4 +68,13 @@ double ConvLayer::getNeuronValue(int index) {
 	return layer[index].value;
 }
 
-
+void ConvLayer::say() {
+	for (int c = 0; c < quantityOfNeuorns; c++) {
+		for (int i = 0; i < layer[c].size; i++) {
+			for (int j = 0; j < layer[c].size; j++) {
+				std::cout << layer[c].BMatrix[i][j] << ' ';
+			}
+			std::cout << '\n';
+		}
+	}
+}
