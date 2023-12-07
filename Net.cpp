@@ -1,18 +1,59 @@
 #include "Net.h"
 #include "fstream"
+#include "iostream"
+#include <Windows.h>
 
-Net::Net() {
-	setParamsFromFile();
+//Определение методов класса Net
+
+using namespace concurrency;
+
+Net::Net(std::string network_path, std::string optimisator, double input_speed, double special_parameters) {
+	setParamsFromFile(network_path);
+	speed = input_speed;
+	specialParams = special_parameters;
+	if (optimisator == "sgd") {
+		optimisatorFunc = 0;
+	}
+	if (optimisator == "momentum") {
+		optimisatorFunc = 1;
+	}
+
+
 }
 
-void Net::randWeights() {
-	for (int i = 1; i < quantityOfLayers; i++) {
-		layers[i].randWeightsOnConnections(layers[i - 1].getQuantityOfNeurons());
+Net::Net(std::string network_path, std::string optimisator, double input_speed, size_t filter_size, double special_parameters) {
+	setParamsFromFile(network_path);
+	speed = input_speed;
+	specialParams = special_parameters;
+	if (optimisator == "sgd") {
+		optimisatorFunc = 0;
+	}
+	if (optimisator == "momentum") {
+		optimisatorFunc = 1;
 	}
 }
 
-void Net::setParamsFromFile() {
-	std::fstream file("D:\\Tvorch_proect\\Neural_network\\network_info.txt");
+std::vector<double> Net::predict(double data[]) {
+	layers[0].setNeuronsValues(data);
+	straightProp();
+	return returnFinals();
+}
+
+void Net::randWeights() {
+	for (int i = 0; i < quantityOfLayers-1; i++) {
+		layers[i].randWeightsOnConnections(layers[i + 1].getQuantityOfNeurons());
+	}
+	layers[quantityOfLayers - 1].randWeightsOnConnections(0);
+}
+
+void Net::readWeights(std::fstream& file) {
+	for (int i = 1; i < quantityOfLayers; i++) {
+		layers[i].readWeights(layers[i - 1].getQuantityOfNeurons(), file);
+	}
+}
+
+void Net::setParamsFromFile(std::string network_path) {
+	std::fstream file(network_path);
 	std::string state;
 	file >> state;
 	file >> quantityOfLayers;
@@ -25,20 +66,45 @@ void Net::setParamsFromFile() {
 
 	if (state == "untrained") {
 		randWeights();
+		createConnectionsToPrevLayers(false);
 	}
 	else {
-
+		readWeights(file);
+		createConnectionsToNextLayers();
 	}
+	
 	file.close();
 }
 
-void Net::train() {
-	inputDataset();
-	for (int c = 0; c < trainDataNumber; c++) {
-		layers[0].setNeuronsValues(dataSet[c]);
-		straightProp();
-		returnFinals();
-	}
+void Net::setFromFileConv(std::string network_path) {
+
+}
+
+void Net::train(std::string trainData, double critError, std::string network_save_path) {
+	inputDataset(trainData);
+	volatile double error;
+	int epochs = 0;
+	do {
+		/*if (epochs % 10 == 0) {
+			system("cls");
+		}*/
+		error = 0;
+
+		for (int c = 0; c < trainDataNumber; c++) {
+			layers[0].setNeuronsValues(dataSet[c]);
+			straightProp();
+			error += squareError(c);
+			calcNeuronError(c);
+			correctWeights();
+			createConnectionsToPrevLayers();
+		}
+		error /= trainDataNumber;
+		epochs++;
+		std::cout << error << "\n";
+	} while (error > critError);
+	std::cout << '\n';
+	returnFinals();
+	saveData(network_save_path);
 }
 
 void Net::straightProp() {
@@ -47,19 +113,20 @@ void Net::straightProp() {
 	for (int c = 1; c < quantityOfLayers; c++) {
 		neuronsNumber = layers[c - 1].getQuantityOfNeurons();
 		prevValues = new double[neuronsNumber];
-
+		//std::cout << "1: ";
 		for (int i = 0; i < neuronsNumber; i++) {
 			prevValues[i] = layers[c - 1].getNeuronValue(i);
+			//std::cout << prevValues[i] << ' ';
 		}
-
+		//std::cout << '\n';
 		layers[c].straightProp(prevValues, neuronsNumber);
-
-		delete prevValues;
+		//std::cout << '\n';
+		delete[] prevValues;
 	}
 }
 
-void Net::returnFinals() {
-	layers[quantityOfLayers - 1].printValues();
+std::vector<double> Net::returnFinals() {
+	return layers[quantityOfLayers - 1].returnValues();
 }
 
 void Net::say() {
@@ -69,9 +136,10 @@ void Net::say() {
 	}
 }
 
-void Net::inputDataset() {
-	std::fstream file("D:\\Tvorch_proect\\Neural_network\\dataset.txt");
+void Net::inputDataset(std::string data) {
+	std::fstream file(data);
 	file >> trainDataNumber;
+	std::cout << trainDataNumber << std::endl;
 	dataSet = new double* [trainDataNumber];
 	int n = layers[0].getQuantityOfNeurons();
 	for (int i = 0; i < trainDataNumber; i++) {
@@ -82,4 +150,108 @@ void Net::inputDataset() {
 	}
 
 	file.close();
+}
+
+double Net::squareError(int iterator) {
+	double error = 0;
+	for (int c = 0; c < layers[quantityOfLayers - 1].getQuantityOfNeurons(); c++) {
+		double buffer = (layers[quantityOfLayers - 1].getNeuronValue(c) - dataSet[iterator][layers[0].getQuantityOfNeurons()]);
+		error += 0.5 * buffer * buffer;
+	}
+	return error;
+}
+
+void Net::calcNeuronError(int iterator) {
+	double error = 0;
+	double* errors;
+	int len;
+	layers[quantityOfLayers - 1].outerNeuronError(dataSet[iterator][layers[0].getQuantityOfNeurons()]);
+	for (int i = quantityOfLayers - 2; i > 0; i--) {
+		len = layers[i + 1].getQuantityOfNeurons();
+		errors = new double[len];
+		for (int j = 0; j < len; j++) {
+			errors[j] = layers[i+1].getErrors(j);
+		}
+		layers[i].innerNeuronError(errors, len);
+		delete[] errors;
+	}
+}
+
+void Net::correctWeights() {
+	double* errors;
+	size_t len;
+
+	for (int c = 0; c < quantityOfLayers - 1; c++) {
+		len = layers[c + 1].getQuantityOfNeurons();
+		errors = new double[len];
+		/*parallel_for(size_t(0), len, [&](size_t j) {
+			errors[j] = layers[c + 1].getErrors(j);
+			});*/
+
+		for (int j = 0; j < len; j++) {
+			errors[j] = layers[c + 1].getErrors(j);
+		}
+
+		switch (optimisatorFunc)
+		{
+		case 0:
+			layers[c].correctWeightsSGD(speed, errors);
+			break;
+		case 1:
+			layers[c].correctWeightsMomentum(speed, errors, specialParams);
+			break;
+		default:
+			std::cout << "warning: No such optimisation function.\n";
+			break;
+		}
+		delete[] errors;
+	}
+}
+
+void Net::createConnectionsToPrevLayers(bool wasAllocated) {
+	for (int c = 1; c < quantityOfLayers; c++) {
+		double *array = new double [layers[c - 1].getQuantityOfNeurons()];
+		for (int i = 0; i < layers[c].getQuantityOfNeurons(); i++) {
+			layers[c - 1].getWeightsOfIndexedConnectionsPrev(i, array);
+			if(wasAllocated)
+				layers[c].createConnectionsToPrev(array, i);
+			else {
+				layers[c].allocateMemForConnections(layers[c - 1].getQuantityOfNeurons(), i);
+				layers[c].createConnectionsToPrev(array, i);
+			}
+		}
+		delete[] array;
+	}
+}
+
+void Net::createConnectionsToNextLayers() {
+	for (int c = 0; c < quantityOfLayers - 1; c++) {
+		double* array = new double[layers[c + 1].getQuantityOfNeurons()];
+		for (int i = 0; i < layers[c].getQuantityOfNeurons(); i++) {
+			layers[c + 1].getWeightsOfIndexedConnectionsNext(i, array);
+			layers[c].createConnectionsToNext(array, layers[c + 1].getQuantityOfNeurons(), i);
+		}
+		delete[] array;
+	}
+}
+
+void Net::saveData(std::string save_path) {
+	std::ofstream file(save_path);
+	file << "trained\n" << quantityOfLayers << '\n';
+	for (int c = 0; c < quantityOfLayers; c++) {
+		file << layers[c].getQuantityOfNeurons() << ' ';
+	}
+	for (int c = 1; c < quantityOfLayers; c++) {
+		layers[c].saveWeights(file);
+	}
+	file.close();
+}
+
+Net::~Net() {
+	delete[] layers;
+	for (int c = 0; c < trainDataNumber; c++) {
+		delete[] dataSet[c];
+	}
+	delete[] dataSet;
+	//std::cout << "НА НЕТЕ\n";
 }
