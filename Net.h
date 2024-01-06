@@ -1,6 +1,8 @@
 #pragma once
 #include "Layer.h"
 #include "ConvLayer.h"
+#include <opencv2/opencv.hpp>
+#include "Image.h"
 
 class Net {
 public:
@@ -26,19 +28,22 @@ public:
 
 private:
 	// Fully-connected vars
-	Layer* layers;
+	Layer* layers = nullptr;
 	int quantityOfLayers; 
 	size_t trainDataNumber;
-	double** dataSet;
+	double** dataSet = nullptr;
 	double speed;
 	double specialParams;
 	int optimisatorFunc;
 
 	// Convertive vars
 	size_t matrixSize;
-	ConvLayer* convLayers;
+	ConvLayer* convLayers = nullptr;
 	int convQuantityOfLayers;
 	std::vector <std::string>  nameTraenData;
+	double** red = nullptr;
+	double** green = nullptr;
+	double** blue = nullptr;
 
 
 	// Fully-connected methods
@@ -54,9 +59,10 @@ private:
 	void saveData(std::string save_path);
 
 	// Convertive methods
+	void train(double critError, std::string network_save_path);
 	void convRandWeights();
 	void setConvLayersFromFile(std::string network_path);
 	std::string randData();
-
-
+	void cForward(cv::Mat image);
+	void fillRGB(int y, int x);
 };

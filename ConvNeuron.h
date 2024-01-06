@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
-
+#include <opencv2/opencv.hpp>
+#include "Image.h"
 class ConvNeuron {
 public:
 	// Ïîëÿ êëàññà. 
@@ -16,17 +17,23 @@ public:
 	// ## ÄËß G-ÊÀÍÀËÀ = GMatrix,
 	// ## ÄËß B-ÊÀÍÀËÀ = BMatrix,
 	// ĞÀÇÌÅĞ 1 ÈÇÌÅĞÅÍÈß ÊÂÀÄĞÀÒÍÎÉ ÌÀÒĞÈÖÛ = size
-	double value;
+	double** Rresult = nullptr;
+	double** Bresult = nullptr;
+	double** Gresult = nullptr;
+	double** result = nullptr;
 	double error;
 	double bias;
-	double** RoldDW;
-	double** BoldDW;
-	double** GoldDW;
-	double** RMatrix;
-	double** GMatrix;
-	double** BMatrix;
+	double** RoldDW = nullptr;
+	double** BoldDW = nullptr;
+	double** GoldDW = nullptr;
+	double** RMatrix = nullptr;
+	double** GMatrix = nullptr;
+	double** BMatrix = nullptr;
 	int size;
 
 
 	void fillMatrix(int _size);
+	void fillResMatrix(int rows, int cols);
+	//void forward(double** red, double** green, double** blue, int x, int y);
+	void forward(cv::Mat image, int x, int y, Image& uzobr, int neron); //
 };

@@ -259,6 +259,23 @@ void Net::convRandWeights() {
 	}
 }
 
+void Net::fillRGB(int y, int x) {
+	red = new double* [y + matrixSize / 2 + 1];
+	green = new double* [y + matrixSize / 2 + 1];
+	blue = new double* [y + matrixSize / 2 + 1];
+
+	for (int i = 0; i < y + matrixSize / 2 + 1; i++) {
+		red[i] = new double[x + matrixSize / 2 + 1];
+		green[i] = new double[x + matrixSize / 2 + 1];
+		blue[i] = new double[x + matrixSize / 2 + 1];
+		for (int j = 0; j < x + matrixSize / 2 + 1; j++) {
+			red[i][j] = 0;
+			green[i][j] = 0;
+			blue[i][j] = 0;
+		}
+	}
+}
+
 void Net::setConvLayersFromFile(std::string network_path) {
 	std::fstream file(network_path);
 	std::string state;
@@ -295,11 +312,64 @@ std::string Net::randData() {
 	return way;
 }
 
-void Net::say() {
-	std::cout << '\n' << convQuantityOfLayers << '\n';
-	for (int c = 0; c < convQuantityOfLayers / 2; c++) {
-		convLayers[c].say();
+void Net::train(double critError, std::string network_save_path) {
+	cv::Mat image = cv::imread(randData());
+	double error;
+	int epochs = 0;
+	do {
+
+		/*if (epochs % 10 == 0) {
+			system("cls");
+		}*/
+		error = 0;
+
+		for (int c = 0; c < trainDataNumber; c++) {
+			cForward(image);
+			layers[0].setNeuronsValues(dataSet[c]);
+			straightProp();
+			error += squareError(c);
+			calcNeuronError(c);
+			correctWeights();
+			createConnectionsToPrevLayers();
+			image = cv::imread(randData());
+		}
+		error /= trainDataNumber;
+		epochs++;
+		std::cout << error << "\n";
+	} while (error > critError);
+	std::cout << '\n';
+	returnFinals();
+	saveData(network_save_path);
+}
+
+void Net::cForward(cv::Mat image) {
+	int y = image.cols;
+	int x = image.rows;
+	Image uzobr(y, x, convLayers[0].getQuantityOfNeurons());
+	/*if (red == nullptr)
+		fillRGB(y, x);
+	for (int c = matrixSize / 2; c < y + matrixSize / 2; c++) {
+		for (int q = matrixSize / 2; q < x + matrixSize / 2; q++) {
+			cv::Vec3b pixel = image.at<cv::Vec3b>(c - matrixSize / 2, q - matrixSize / 2);
+			red[c][q] = double(pixel[2]);
+			green[c][q] = double(pixel[1]);
+			blue[c][q] = double(pixel[0]);
+		}
+	}*/
+	for (int c = 0; c < convQuantityOfLayers; c++) {
+		//convLayers[c].forward(red, green, blue, x, y);
+		convLayers[c].forward(image, x, y, uzobr);
 	}
+}
+
+void Net::say() {
+	std::string s = randData();
+	cv::Mat image = cv::imread(s);
+	cv::resize(image, image, cv::Size(400, 300));
+	cv::namedWindow("eximage", cv::WINDOW_AUTOSIZE);
+	cv::imshow("eximage", image);
+	cv::waitKey(0);
+	cv::destroyWindow("eximage");
 }
 
 // Destructor

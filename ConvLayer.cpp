@@ -48,26 +48,17 @@ void ConvLayer::readMatrix(int size, std::fstream& file) {
 	}
 }
 
-void ConvLayer::inputDataForWork() {
-	std::fstream file("D:\\Tvorch_proect\\Neural_network\\dataset.txt");
+//void ConvLayer::forward(double** red, double** green, double** blue, int x, int y) {
+//	for (int c = 0; c < quantityOfNeuorns; c++) {
+//		layer[c].forward(red, green, blue, x, y);
+//	}
+//	
+//}
+void ConvLayer::forward(cv::Mat image, int x, int y, Image& uzobr) {
 	for (int c = 0; c < quantityOfNeuorns; c++) {
-		file >> layer[c].value;
-	}
-
-	file.close();
-}
-
-
-void ConvLayer::setNeuronsValues(double value[]) {
-	for (int c = 0; c < quantityOfNeuorns; c++) {
-		layer[c].value = value[c];
+		layer[c].forward(image, x, y, uzobr, c);
 	}
 }
-
-double ConvLayer::getNeuronValue(int index) {
-	return layer[index].value;
-}
-
 void ConvLayer::say() {
 	for (int c = 0; c < quantityOfNeuorns; c++) {
 		for (int i = 0; i < layer[c].size; i++) {

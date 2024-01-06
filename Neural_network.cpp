@@ -2,7 +2,6 @@
 #include <ctime>
 #include <fstream>
 #include "Net.h"
-#include <opencv2/opencv.hpp>
 
 int main()
 {
@@ -26,10 +25,9 @@ int main()
     //return 0;
 
     //unsigned int start_time = clock();
-    setlocale(LC_ALL, "Rus");
+   /* setlocale(LC_ALL, "Rus");
     Net network("network_info.txt", "conv_info.txt", "momentum", 0.3, 3, 0.9);
-    network.say();
-
+    network.say();*/
     /*network.train("D:\\Tvorch_proect\\Neural_network\\test.txt", 0.0000132, "network_info_test.txt");
     unsigned int end_time = clock();
     unsigned int search_time = end_time - start_time;

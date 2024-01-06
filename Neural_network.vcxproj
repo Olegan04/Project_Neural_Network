@@ -139,11 +139,13 @@
     <ClCompile Include="Net.cpp" />
     <ClCompile Include="Neural_network.cpp" />
     <ClCompile Include="Neuron.cpp" />
+    <ClCompile Include="Image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Activator.h" />
     <ClInclude Include="ConvLayer.h" />
     <ClInclude Include="ConvNeuron.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="Neuron.h" />
     <ClInclude Include="Layer.h" />
     <ClInclude Include="Net.h" />
