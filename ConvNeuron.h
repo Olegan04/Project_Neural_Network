@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <opencv2/opencv.hpp>
 #include "Image.h"
 class ConvNeuron {
@@ -34,6 +33,5 @@ public:
 
 	void fillMatrix(int _size);
 	void fillResMatrix(int rows, int cols);
-	//void forward(double** red, double** green, double** blue, int x, int y);
-	void forward(cv::Mat image, int x, int y, Image& uzobr, int neron); //
+	void forward(cv::Mat image, int x, int y, Image& output_img, int neron);
 };

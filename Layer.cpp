@@ -105,11 +105,6 @@ void Layer::correctWeightsSGD(double speed, double *errors) {
 void Layer::correctWeightsMomentum(double speed, double* errors, double b) {
 	for (int c = 0; c < quantityOfNeuorns; c++) {
 		layer[c].bias -= speed * layer[c].error;
-		/*size_t numberOfConnections = layer[c].quantityOfConnectionsToNext;
-		parallel_for (size_t(0), numberOfConnections, [&](size_t i) {
-			layer[c].oldDW[i] = b * layer[c].oldDW[i] + (1 - b) * errors[i] * layer[c].value;
-			layer[c].connectionsToNextLayer[i] -= speed * layer[c].oldDW[i];
-		});*/
 
 		for (int i = 0; i < layer[c].quantityOfConnectionsToNext; i++) {
 			layer[c].oldDW[i] = b * layer[c].oldDW[i] + (1 - b) * errors[i] * layer[c].value;

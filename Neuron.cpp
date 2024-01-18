@@ -41,11 +41,7 @@ double Neuron::leakyReLUDerivative() {
 }
 
 Neuron::~Neuron() {
-	/*int a;
-	std::cin >> a;
-	std::cout << connections[0];*/
-	//delete[] connections;
-	/*delete[] connectionsToNextLayer;
-	delete[] oldDW;*/
-	/*std::cout << "ÍÀ ÍÅÉĞÎÍÅ\n";*/
+	delete[] connections;
+	delete[] connectionsToNextLayer;
+	// delete[] oldDW;
 }

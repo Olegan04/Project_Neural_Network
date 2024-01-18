@@ -35,36 +35,17 @@ void ConvNeuron::fillResMatrix(int rows, int cols) {
 	}
 }
 
-/*void ConvNeuron::forward(double** _red, double** _green, double** _blue, int x, int y) {
-	if (result == nullptr)
-		fillResMatrix(y, x);
-
-	for (int i = 0; i < y; i++) {
-		for (int j = 0; j < x; j++) {
-			double red = 0, green = 0, blue = 0;
-			for (int k = 0; k < size; k++) {
-				for (int q = 0; q < size; q++) {
-					red += _red[i + k][j + q] * RMatrix[k][q];
-					green += _green[i + k][j + q] * GMatrix[k][q];
-					blue += _blue[i + k][j + q] * BMatrix[k][q];
-				}
-			}
-			Rresult[i][j] = red;
-			Gresult[i][j] = green;
-			Bresult[i][j] = blue;
-			result[i][j] = red + green + blue + bias;
-		}
-	}
-}*/
-
-void ConvNeuron::forward(cv::Mat image, int x, int y, Image& uzobr, int neron) {
-	int X = 0, Y = 0;
+void ConvNeuron::forward(cv::Mat image, int x, int y, Image& output_img, int neron) {
+	int X = 0, Y = -1;
 	for (int i = -size / 2; i < y + (size / 2); i++) {
 		for (int j = -size / 2; j < x + (size / 2); j++) {
 			Y++;
-			if (Y == uzobr.size_y) {
+			if (Y == output_img.size_y) {
 				X++;
 				Y = 0;
+			}
+			if (X == output_img.size_x) {
+				return;
 			}
 			double red = 0, green = 0, blue = 0;
 			for (int k = 0; k < size; k++) {
@@ -81,7 +62,7 @@ void ConvNeuron::forward(cv::Mat image, int x, int y, Image& uzobr, int neron) {
 					
 				}
 			}
-			uzobr.image[X][Y][neron] = red + green + blue + bias;
+			output_img.image[X][Y][neron] = red + green + blue + bias;
 		}
 	}
 }

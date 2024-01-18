@@ -13,10 +13,6 @@ public:
 	void inputDataset(std::string data);
 	void train(std::string trainData, double critError, std::string network_save_path);
 
-
-	// Convertive methods
-	
-
 								
 	// Testing
 	std::vector<double> predict(double data[]);
@@ -35,6 +31,7 @@ private:
 	double speed;
 	double specialParams;
 	int optimisatorFunc;
+
 
 	// Convertive vars
 	size_t matrixSize;
@@ -58,6 +55,7 @@ private:
 	void correctWeights();
 	void saveData(std::string save_path);
 
+
 	// Convertive methods
 	void train(double critError, std::string network_save_path);
 	void convRandWeights();
@@ -65,4 +63,6 @@ private:
 	std::string randData();
 	void cForward(cv::Mat image);
 	void fillRGB(int y, int x);
+	void maxPull(Image& image, Image& im);
+	double max_four(double a, double b, double c, double d);
 };

@@ -3,6 +3,7 @@
 #include "iostream"
 #include <string>
 #include <Windows.h>
+#include <math.h>
 
 // Methods for fully-connected layers
 
@@ -317,10 +318,6 @@ void Net::train(double critError, std::string network_save_path) {
 	double error;
 	int epochs = 0;
 	do {
-
-		/*if (epochs % 10 == 0) {
-			system("cls");
-		}*/
 		error = 0;
 
 		for (int c = 0; c < trainDataNumber; c++) {
@@ -345,31 +342,44 @@ void Net::train(double critError, std::string network_save_path) {
 void Net::cForward(cv::Mat image) {
 	int y = image.cols;
 	int x = image.rows;
-	Image uzobr(y, x, convLayers[0].getQuantityOfNeurons());
-	/*if (red == nullptr)
-		fillRGB(y, x);
-	for (int c = matrixSize / 2; c < y + matrixSize / 2; c++) {
-		for (int q = matrixSize / 2; q < x + matrixSize / 2; q++) {
-			cv::Vec3b pixel = image.at<cv::Vec3b>(c - matrixSize / 2, q - matrixSize / 2);
-			red[c][q] = double(pixel[2]);
-			green[c][q] = double(pixel[1]);
-			blue[c][q] = double(pixel[0]);
-		}
-	}*/
+	Image output_img(y, x, convLayers[0].getQuantityOfNeurons());
 	for (int c = 0; c < convQuantityOfLayers; c++) {
-		//convLayers[c].forward(red, green, blue, x, y);
-		convLayers[c].forward(image, x, y, uzobr);
+		convLayers[c].forward(image, x, y, output_img);
 	}
+	output_img.say(0);
+	Image new_image(y / 2, x / 2, convLayers[0].getQuantityOfNeurons());
+	maxPull(output_img, new_image);
+	new_image.say(0);
+
+}
+
+void Net::maxPull(Image& image, Image& im) {
+	for (int c = 0; c < image.kol_color; c++) {
+		int x = 0, y = 0;
+		for (int i = 0; i < image.size_x - 1; i += 2) {
+			for (int j = 0; j < image.size_y - 1; j += 2) {
+				if (y == im.size_y) {
+					x++;
+					y = 0;
+				}
+				im.image[x][y][c] = max_four(image.image[i][j][c], image.image[i][j + 1][c], image.image[i + 1][j][c], image.image[i + 1][j + 1][c]);
+				y++;
+			}
+		}
+	}
+}
+
+double Net::max_four(double a, double b, double c, double d) {
+	if (a < b) a = b;
+	if (c < d) c = d;
+	if (a < c) a = c;
+	return a;
 }
 
 void Net::say() {
 	std::string s = randData();
 	cv::Mat image = cv::imread(s);
-	cv::resize(image, image, cv::Size(400, 300));
-	cv::namedWindow("eximage", cv::WINDOW_AUTOSIZE);
-	cv::imshow("eximage", image);
-	cv::waitKey(0);
-	cv::destroyWindow("eximage");
+	cForward(image);
 }
 
 // Destructor

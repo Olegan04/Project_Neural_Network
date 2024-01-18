@@ -48,15 +48,9 @@ void ConvLayer::readMatrix(int size, std::fstream& file) {
 	}
 }
 
-//void ConvLayer::forward(double** red, double** green, double** blue, int x, int y) {
-//	for (int c = 0; c < quantityOfNeuorns; c++) {
-//		layer[c].forward(red, green, blue, x, y);
-//	}
-//	
-//}
-void ConvLayer::forward(cv::Mat image, int x, int y, Image& uzobr) {
+void ConvLayer::forward(cv::Mat image, int x, int y, Image& output_img) {
 	for (int c = 0; c < quantityOfNeuorns; c++) {
-		layer[c].forward(image, x, y, uzobr, c);
+		layer[c].forward(image, x, y, output_img, c);
 	}
 }
 void ConvLayer::say() {

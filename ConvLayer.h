@@ -9,7 +9,7 @@ public:
 
 	// Специальные методы
 	//void forward(double** red, double** green, double** blue, int x, int y);
-	void forward(cv::Mat image, int x, int y, Image& uzobr);
+	void forward(cv::Mat image, int x, int y, Image& output_img);
 	void randMatrix(int size);
 	void readMatrix(int size, std::fstream& file);
 	void straightProp(double values[], int kol);
@@ -29,11 +29,10 @@ public:
 	double getErrors(int iterator);
 	void saveMatrix(std::ofstream& file);
 
+
 	// Методы тестирования
 	void say();
 
-
-	//~ConvLayer();
 private:
 	ConvNeuron* layer = nullptr;
 	int quantityOfNeuorns;
